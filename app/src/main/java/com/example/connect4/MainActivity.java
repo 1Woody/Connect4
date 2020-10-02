@@ -16,41 +16,28 @@ public class MainActivity extends AppCompatActivity {
 
     private class Cell {
         Button bt;
-        String value;
         int j;
         public Cell(Context THIS, int J){
             j = J;
             bt = new Button(THIS);
-            value="";
             bt.setLayoutParams(new LinearLayout.LayoutParams(buttonsize, buttonsize));
             bt.setTextSize(buttonsize/6);
 
             bt.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    int i = 5;
+                    boolean found = false;
                     if (!finish) {
-                        int i = 0;
-                        boolean found = false;
-                        while (i < 6 && !found) {
-                            if (table[i][j].bt.getText() != "") {
+                        while (i >= 0 && !found) {
+                            if (table[i][j].bt.getText() == "" && !finished()) {
+                                turn = turn.equals("X") ? "O" : "X";
+                                table[i][j].bt.setText(turn);
                                 found = true;
-                                value = turn;
-                                turn = turn == "X" ? "O" : "X";
-                                if (i > 0) {
-                                    table[i - 1][j].bt.setText(value);
-                                    table[i - 1][j].value = value;
-                                    finished(i - 1, j);
-                                }
+                                finished();
                             } else {
-                                i++;
+                                i--;
                             }
-                        }
-                        if (!found) {
-                            value = turn;
-                            turn = turn == "X" ? "O" : "X";
-                            table[i - 1][j].bt.setText(value);
-                            table[i - 1][j].value = value;
-                            finished(i - 1, j);
                         }
                     }
                 }
@@ -58,51 +45,52 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //modificar l'array pos amb el valor corresponent
-    //d'on es troba el bt dintre del grid
-    private void gridPosition(int[] pos){
-        int aux = pos[0];
-        if ( aux < 10){
-            pos[0] = 0;
-            pos[1] = aux;
-        }else {
-            pos[0] = aux/10;
-            pos[1] = aux%10;
-        }
-    }
-
     private void win(int i, int j, int di, int dj){
         for (int step=0; step<4; step++,i+=di, j+=dj){
             table[i][j].bt.setTextColor(Color.RED);
+            finish = true;
         }
-        finish = true;
     }
 
     private boolean finished(int i, int j, int di, int dj){
         int iini =i;
         int jini=j;
-        for (int step=0; step<4; step++,i+=di, j+=dj){
-            if ( i<6 && j<7 && i>=0 && j>=0){
-                if (table[i][j].value.equals("") || !table[i][j].value.equals(table[iini][jini].value)){
-                    return false;
-                }
-            }else {
-                return false;
+        int step = 0;
+        String ant = "";
+        while (step<3 && i<6 && j<7 && i>=0 && j>=0){
+            if (table[i][j].bt.getText().equals("") || !table[i][j].bt.getText().equals(ant)){
+                step = 0;
+                iini = i;
+                jini = j;
+                ant = table[iini][jini].bt.getText().toString();
+            }else{
+                step++;
             }
-        }
-        win(iini, jini, di, dj);
-        return true;
-    }
+            i+=di;
+            j+=dj;
 
-    //bug: wining the 4 on
-    private boolean finished(int ipos, int jpos){
-        int[] movi={1,1,1,-1,-1,-1,0,0};
-        int[] movj={-1,0,1,-1,0,1,1,-1};
-        for (int d=0;d<8;d++) {
-            if( finished(ipos,jpos,movi[d],movj[d]) ) return true;
+        }
+        if (step == 3){
+            win(iini, jini, di, dj);
+            return true;
         }
         return false;
     }
+
+    private boolean finished(){
+        for(int i = 0; i<6; i++){
+            if (finished(i, 0, 0, 1)  ||  //hor
+                finished(0, i, 1, 0)  ||  //vert
+                finished(i, 0, 1, 1)  ||  //diagdret
+                finished(0, i, 1, 1)  || //diagdret
+                finished(i, 0, -1, -1)|| //diagesq
+                finished(i, 6, 1, -1))   //diagesq
+            return true;
+        }
+        return false;
+    }
+
+
 
     Button btreset;
     Cell[][] table;
@@ -128,7 +116,6 @@ public class MainActivity extends AppCompatActivity {
         gr.setColumnCount(7);
         table= new Cell[6][7];
         for (int i=0; i<6; i++){
-            //table[i] = new Cell[3];
             for(int j=0; j<7; j++){
                 table[i][j]= new Cell(this, j);
                 gr.addView(table[i][j].bt);
@@ -153,7 +140,6 @@ public class MainActivity extends AppCompatActivity {
                     for (int j = 0; j < 7; j++) {
                         table[i][j].bt.setText("");
                         table[i][j].bt.setTextColor(Color.BLACK);
-                        table[i][j].value = "";
                         finish = false;
 
                     }
