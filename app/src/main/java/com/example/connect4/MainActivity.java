@@ -17,11 +17,11 @@ public class MainActivity extends AppCompatActivity {
     private class Cell {
         Button bt;
         String value;
-        public Cell(Context THIS, int i, int j){
+        int j;
+        public Cell(Context THIS, int J){
+            j = J;
             bt = new Button(THIS);
             value="";
-            String p = i + String.valueOf(j);
-            bt.setId(Integer.parseInt(p));
             bt.setLayoutParams(new LinearLayout.LayoutParams(buttonsize, buttonsize));
             bt.setTextSize(buttonsize/6);
 
@@ -29,11 +29,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
                     if (!finish) {
-                        int[] pos = new int[2];
-                        pos[0] = bt.getId();
-                        gridPosition(pos);
-                        int i = pos[0];
-                        int j = pos[1];
+                        int i = 0;
                         boolean found = false;
                         while (i < 6 && !found) {
                             if (table[i][j].bt.getText() != "") {
@@ -78,45 +74,33 @@ public class MainActivity extends AppCompatActivity {
     private void win(int i, int j, int di, int dj){
         for (int step=0; step<4; step++,i+=di, j+=dj){
             table[i][j].bt.setTextColor(Color.RED);
-            finish = true;
         }
+        finish = true;
     }
 
     private boolean finished(int i, int j, int di, int dj){
         int iini =i;
-        int wi=i;
-        int wj=j;
         int jini=j;
         for (int step=0; step<4; step++,i+=di, j+=dj){
             if ( i<6 && j<7 && i>=0 && j>=0){
-                if (table[i][j].value == "" || table[i][j].value!=table[iini][jini].value){
+                if (table[i][j].value.equals("") || !table[i][j].value.equals(table[iini][jini].value)){
                     return false;
                 }
             }else {
                 return false;
             }
-
         }
-        win(wi, wj, di, dj);
+        win(iini, jini, di, dj);
         return true;
     }
 
+    //bug: wining the 4 on
     private boolean finished(int ipos, int jpos){
-        if (finished(ipos, jpos, 0, 1)) return true;
-        //left
-        if (finished(ipos, jpos, 0, -1)) return true;
-        //top
-        if (finished(ipos, jpos, -1, 0)) return true;
-        //bottom
-        if (finished(ipos, jpos, 1, 0)) return true;
-        //diagbottomright
-        if (finished(ipos, jpos, 1, 1)) return true;
-        //diagbottomleft
-        if (finished(ipos, jpos, 1, -1)) return true;
-        //diagtopright
-        if (finished(ipos, jpos, -1, 1)) return true;
-        //diagtoprleft
-        if (finished(ipos, jpos, -1, -1)) return true;
+        int[] movi={1,1,1,-1,-1,-1,0,0};
+        int[] movj={-1,0,1,-1,0,1,1,-1};
+        for (int d=0;d<8;d++) {
+            if( finished(ipos,jpos,movi[d],movj[d]) ) return true;
+        }
         return false;
     }
 
@@ -146,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
         for (int i=0; i<6; i++){
             //table[i] = new Cell[3];
             for(int j=0; j<7; j++){
-                table[i][j]= new Cell(this, i, j);
+                table[i][j]= new Cell(this, j);
                 gr.addView(table[i][j].bt);
             }
         }
